@@ -1,0 +1,9 @@
+{
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "cd ohO && gunicorn oho_kg.wsgi",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}

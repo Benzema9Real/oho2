@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["python311"]
+
+[phases.install]
+cmds = ["cd ohO && pip install -r requirements.txt"]
+
+[phases.build]
+cmds = ["cd ohO && python manage.py collectstatic --noinput"]
+
+[start]
+cmd = "cd ohO && gunicorn oho_kg.wsgi"
