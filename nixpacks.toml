@@ -5,7 +5,10 @@ nixPkgs = ["python311", "python311Packages.pip"]
 cmds = ["cd ohO && pip install -r requirements.txt --break-system-packages"]
 
 [phases.build]
-cmds = ["cd ohO && python manage.py collectstatic --noinput"]
-
+cmds = [
+    "cd ohO && python manage.py collectstatic --noinput",
+    "cd ohO && python manage.py migrate",
+    "cd ohO && python create_superuser.py"
+]
 [start]
 cmd = "cd ohO && gunicorn oho_kg.wsgi"
