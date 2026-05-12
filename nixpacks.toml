@@ -6,9 +6,11 @@ cmds = ["cd ohO && pip install -r requirements.txt --break-system-packages"]
 
 [phases.build]
 cmds = [
-    "cd ohO && python manage.py collectstatic --noinput",
+    "cd ohO && python manage.py makemigrations",
     "cd ohO && python manage.py migrate",
+    "cd ohO && python manage.py collectstatic --noinput",
     "cd ohO && python create_superuser.py"
 ]
+
 [start]
-cmd = "cd ohO && gunicorn oho_kg.wsgi"
+cmd = "cd ohO && python -m gunicorn oho_kg.wsgi"
