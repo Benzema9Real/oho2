@@ -3,7 +3,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "cd ohO && python -m gunicorn oho_kg.wsgi --bind 0.0.0.0:$PORT",
+    "startCommand": "cd ohO && /app/venv/bin/gunicorn oho_kg.wsgi --bind 0.0.0.0:$PORT",
     "restartPolicyType": "ON_FAILURE"
   }
 }
