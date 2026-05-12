@@ -13,4 +13,4 @@ cmds = [
 ]
 
 [start]
-cmd = "cd ohO && python -m gunicorn oho_kg.wsgi"
+cmd = "cd ohO && python -m gunicorn oho_kg.wsgi --bind 0.0.0.0:$PORT"
