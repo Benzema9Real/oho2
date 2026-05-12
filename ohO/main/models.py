@@ -13,7 +13,7 @@ class Color(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
-    slug = models.SlugField(unique=True)  # для URL: /catalog/sumki/
+    slug = models.SlugField(default='', blank=True) # для URL: /catalog/sumki/
 
     def __str__(self):
         return self.name
