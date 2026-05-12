@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<section class="container" style="margin-top: 40px; margin-bottom: 80px;">
+
+    <div class="row g-5">
+
+        <!-- СЛАЙДЕР ФОТО -->
+        <div class="col-lg-6">
+            <div class="product-slider">
+                {% with images=product.images.all %}
+                {% if images %}
+                    <!-- главное фото -->
+                    <div class="main-photo-wrap">
+                        <img id="main-photo"
+                             src="{{ images.0.image.url }}"
+                             alt="{{ product.name }}"
+                             class="main-photo">
+
+                        <!-- стрелки -->
+                        {% if images.count > 1 %}
+                        <button class="slider-arrow left" onclick="changeSlide(-1)">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <button class="slider-arrow right" onclick="changeSlide(1)">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                        {% endif %}
+
+                        <!-- бейдж -->
+                        {% if product.has_discount %}
+                            <span class="discount-badge">-{{ product.discount_percent }}%</span>
+                        {% elif product.is_new %}
+                            <span class="new-badge">Новинка</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- миниатюры -->
+                    {% if images.count > 1 %}
+                    <div class="thumbnails">
+                        {% for img in images %}
+                        <img src="{{ img.image.url }}"
+                             alt="{{ product.name }}"
+                             class="thumb {% if forloop.first %}active{% endif %}"
+                             onclick="setSlide({{ forloop.counter0 }})">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- скрытый список URL для JS -->
+                    <div id="photo-urls" style="display:none;">
+                        {% for img in images %}
+                            <span>{{ img.image.url }}</span>
+                        {% endfor %}
+                    </div>
+
+                {% else %}
+                    <img src="{% static 'placeholder.jpg' %}" alt="{{ product.name }}" class="main-photo">
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- ИНФО О ТОВАРЕ -->
+        <div class="col-lg-6">
+            <p class="product-category">{{ product.category.name }}</p>
+            <h1 class="product-name">{{ product.name }}</h1>
+
+            <!-- цена -->
+            <div class="price-block">
+                {% if product.has_discount %}
+                    <span class="price-old-lg">{{ product.price }} сом</span>
+                    <span class="price-new-lg">{{ product.discounted_price }} сом</span>
+                    <span class="discount-pill">Скидка {{ product.discount_percent }}%</span>
+                {% else %}
+                    <span class="price-regular-lg">{{ product.price }} сом</span>
+                {% endif %}
+            </div>
+
+            <!-- описание -->
+            <p class="product-description">{{ product.description }}</p>
+
+            <!-- цвета -->
+            {% if product.colors.all %}
+            <div class="colors-block">
+                <p class="colors-label">Доступные цвета:</p>
+                <div class="colors-list">
+                    {% for color in product.colors.all %}
+                        <span class="color-dot" style="background-color: {{ color.hex }};"
+                              title="{{ color.name }}"></span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- наличие -->
+            <p class="stock-info">
+                {% if product.stock > 0 %}
+                    <i class="bi bi-check-circle-fill" style="color:#2ecc71;"></i>
+                    В наличии ({{ product.stock }} шт.)
+                {% else %}
+                    <i class="bi bi-x-circle-fill" style="color:#e74c3c;"></i>
+                    Нет в наличии
+                {% endif %}
+            </p>
+
+            <!-- кнопки -->
+            <div class="action-buttons">
+                {% if user.is_authenticated %}
+                    <button class="btn btn-gold btn-lg cart-btn-detail"
+                            data-product="{{ product.pk }}"
+                            onclick="toggleCartDetail(this)">
+                        {% if is_in_cart %}
+                            <i class="bi bi-bag-dash me-2"></i>Убрать из корзины
+                        {% else %}
+                            <i class="bi bi-bag-plus me-2"></i>В корзину
+                        {% endif %}
+                    </button>
+
+                    <button class="btn fav-btn-detail {% if is_favorite %}active{% endif %}"
+                            data-product="{{ product.pk }}"
+                            onclick="toggleFavDetail(this)">
+                        <i class="bi bi-heart{% if is_favorite %}-fill{% endif %}"></i>
+                    </button>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-gold btn-lg">
+                        Войти чтобы купить
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .product-category {
+        color: #e0b97d;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+    }
+    .product-name {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+    .price-block {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+    .price-old-lg {
+        text-decoration: line-through;
+        color: #888;
+        font-size: 1.1rem;
+    }
+    .price-new-lg {
+        color: #e74c3c;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    .price-regular-lg {
+        color: #fff;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    .discount-pill {
+        background: #e74c3c;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+    .product-description {
+        color: #bbb;
+        line-height: 1.8;
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+    }
+    .colors-label {
+        color: #888;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+    }
+    .colors-list { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .color-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid #333;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .color-dot:hover { transform: scale(1.2); }
+    .stock-info {
+        font-size: 0.9rem;
+        margin-bottom: 28px;
+        color: #ccc;
+    }
+    .action-buttons { display: flex; gap: 12px; align-items: center; }
+    .fav-btn-detail {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        border: 1.5px solid #333;
+        background: transparent;
+        color: #fff;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+    }
+    .fav-btn-detail:hover, .fav-btn-detail.active { color: #e74c3c; border-color: #e74c3c; }
+
+    /* слайдер */
+    .main-photo-wrap {
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        background: #1a1a1a;
+        height: 420px;
+    }
+    .main-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: opacity 0.3s;
+            background: #111;
+    }
+
+    .slider-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.5);
+        border: none;
+        color: #fff;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: background 0.3s;
+        z-index: 2;
+    }
+    .slider-arrow:hover { background: rgba(224,185,125,0.8); }
+    .slider-arrow.left { left: 12px; }
+    .slider-arrow.right { right: 12px; }
+
+    .thumbnails {
+        display: flex;
+        gap: 10px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+    }
+    .thumb {
+        width: 72px;
+        height: 72px;
+        object-fit: cover;
+        border-radius: 10px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: border-color 0.3s;
+        opacity: 0.7;
+    }
+    .thumb.active, .thumb:hover {
+        border-color: #e0b97d;
+        opacity: 1;
+    }
+
+    /* светлая тема */
+    body.light-mode .product-name { color: #111; }
+    body.light-mode .product-description { color: #555; }
+    body.light-mode .main-photo-wrap { background: #eee; }
+    body.light-mode .price-regular-lg { color: #111; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // слайдер
+    const photos = [...document.querySelectorAll('#photo-urls span')].map(s => s.textContent.trim());
+    const thumbs = document.querySelectorAll('.thumb');
+    let current = 0;
+
+    // автослайдер каждые 4 секунды
+    let autoSlide = photos.length > 1 ? setInterval(() => changeSlide(1), 4000) : null;
+
+    function setSlide(index) {
+        current = index;
+        const mainPhoto = document.getElementById('main-photo');
+        mainPhoto.style.opacity = '0';
+        setTimeout(() => {
+            mainPhoto.src = photos[current];
+            mainPhoto.style.opacity = '1';
+        }, 150);
+        thumbs.forEach((t, i) => t.classList.toggle('active', i === current));
+        // сбросить автослайдер
+        if (autoSlide) { clearInterval(autoSlide); autoSlide = setInterval(() => changeSlide(1), 4000); }
+    }
+
+    function changeSlide(dir) {
+        let next = (current + dir + photos.length) % photos.length;
+        setSlide(next);
+    }
+
+    // AJAX корзина
+    const CSRF = '{{ csrf_token }}';
+
+    function toggleCartDetail(btn) {
+        const productId = btn.dataset.product;
+        fetch(`/ajax/cart/${productId}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': CSRF},
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.in_cart) {
+                btn.innerHTML = '<i class="bi bi-bag-dash me-2"></i>Убрать из корзины';
+            } else {
+                btn.innerHTML = '<i class="bi bi-bag-plus me-2"></i>В корзину';
+            }
+            const badge = document.querySelector('.badge-count');
+            if (data.cart_count > 0) {
+                if (badge) badge.textContent = data.cart_count;
+                else {
+                    const cartLink = document.querySelector('.cart-badge');
+                    if (cartLink) {
+                        const span = document.createElement('span');
+                        span.className = 'badge-count';
+                        span.textContent = data.cart_count;
+                        cartLink.appendChild(span);
+                    }
+                }
+            } else if (badge) badge.remove();
+        });
+    }
+
+    function toggleFavDetail(btn) {
+        const productId = btn.dataset.product;
+        fetch(`/ajax/favorite/${productId}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': CSRF},
+        })
+        .then(r => r.json())
+        .then(data => {
+            const icon = btn.querySelector('i');
+            if (data.is_fav) {
+                btn.classList.add('active');
+                icon.className = 'bi bi-heart-fill';
+            } else {
+                btn.classList.remove('active');
+                icon.className = 'bi bi-heart';
+            }
+        });
+    }
+</script>
+{% endblock %}

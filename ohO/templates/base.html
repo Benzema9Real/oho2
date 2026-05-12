@@ -1,0 +1,330 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Премиум чемоданы и сумки{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0e0e0e;
+            color: #fff;
+            overflow-x: hidden;
+            transition: background-color 0.4s, color 0.4s;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            padding: 14px 0;
+            transition: background-color 0.4s;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #e0b97d !important;
+            letter-spacing: 1px;
+        }
+        .nav-link {
+            color: #ddd !important;
+            font-weight: 500;
+            margin: 0 6px;
+            transition: color 0.3s;
+        }
+        .nav-link:hover { color: #e0b97d !important; }
+
+        .cart-badge {
+            position: relative;
+            display: inline-block;
+        }
+        .cart-badge .badge-count {
+            position: absolute;
+            top: -6px;
+            right: -10px;
+            background: #e0b97d;
+            color: #000;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 50%;
+            width: 17px;
+            height: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── КНОПКИ ── */
+        .btn-gold {
+            background-color: #e0b97d;
+            color: #000;
+            border: none;
+            font-weight: 600;
+            border-radius: 30px;
+            padding: 10px 30px;
+            transition: background-color 0.3s;
+        }
+        .btn-gold:hover { background-color: #d4a55e; color: #000; }
+
+        .btn-outline-gold {
+            border: 1.5px solid #e0b97d;
+            color: #e0b97d;
+            background: transparent;
+            font-weight: 600;
+            border-radius: 30px;
+            padding: 10px 30px;
+            transition: 0.3s;
+        }
+        .btn-outline-gold:hover {
+            background-color: #e0b97d;
+            color: #000;
+        }
+
+        /* ── КАРТОЧКА ТОВАРА ── */
+        .product-card {
+            background: #1a1a1a;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            height: 100%;
+        }
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(224,185,125,0.1);
+        }
+        .product-card .card-img-wrapper {
+            position: relative;
+            overflow: hidden;
+            height: 220px;
+        }
+.product-card .card-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s;
+}
+        .product-card:hover .card-img-wrapper img {
+            transform: scale(1.05);
+        }
+        .product-card .card-body {
+            padding: 16px;
+        }
+        .product-card h5 {
+            color: #e0b97d;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .product-card .price-old {
+            text-decoration: line-through;
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .product-card .price-new {
+            color: #e74c3c;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .product-card .price-regular {
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .discount-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #e74c3c;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+        .new-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #e0b97d;
+            color: #000;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+        .favorite-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 16px;
+            transition: 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .favorite-btn:hover, .favorite-btn.active { color: #e74c3c; }
+
+        /* ── ФУТЕР ── */
+        footer {
+            background-color: #000;
+            color: #aaa;
+            padding: 40px 0;
+            text-align: center;
+            margin-top: 80px;
+        }
+        footer a {
+            color: #e0b97d;
+            text-decoration: none;
+            margin: 0 8px;
+            transition: color 0.3s;
+        }
+        footer a:hover { color: #fff; }
+
+        /* ── СВЕТЛАЯ ТЕМА ── */
+        body.light-mode { background-color: #f5f5f5; color: #111; }
+        body.light-mode .navbar { background-color: rgba(255,255,255,0.92); }
+        body.light-mode .nav-link { color: #333 !important; }
+        body.light-mode .product-card { background: #fff; }
+        body.light-mode footer { background-color: #ebebeb; color: #555; }
+
+        /* ── АДАПТИВКА ── */
+        @media (max-width: 768px) {
+            .product-card .card-img-wrapper { height: 180px; }
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'index' %}">LUXBAG</a>
+
+        <button class="navbar-toggler border-0" data-bs-toggle="collapse" data-bs-target="#menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="menu">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Главная</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'catalog' %}">Каталог</a></li>
+                <li class="nav-item"><a class="nav-link" href="#about">О бренде</a></li>
+                <li class="nav-item"><a class="nav-link" href="#footer">Контакты</a></li>
+            </ul>
+
+            <ul class="navbar-nav align-items-center gap-2">
+                {% if user.is_authenticated %}
+                    <!-- корзина с числом товаров -->
+                    <li class="nav-item">
+                        <a class="nav-link cart-badge" href="{% url 'cart' %}">
+                            <i class="bi bi-bag" style="font-size:1.2rem"></i>
+                            {% with count=user.cart.items.count %}
+                                {% if count %}
+                                    <span class="badge-count">{{ count }}</span>
+                                {% endif %}
+                            {% endwith %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'favorites' %}">
+                            <i class="bi bi-heart" style="font-size:1.2rem"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my_orders' %}">Мои заказы</a>
+                    </li>
+                    <li class="nav-item">
+<form method="post" action="{% url 'logout' %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline-gold btn-sm">Выйти</button>
+</form>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Войти</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-gold btn-sm" href="{% url 'register' %}">Регистрация</a>
+                    </li>
+                {% endif %}
+
+                <!-- переключатель темы -->
+                <li class="nav-item">
+                    <button id="theme-toggle" class="btn btn-sm btn-outline-secondary ms-1">
+                        <i class="bi bi-sun" id="theme-icon"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- КОНТЕНТ -->
+<main style="padding-top: 76px;">
+    {% if messages %}
+        <div class="container mt-3">
+            {% for msg in messages %}
+                <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+                    {{ msg }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<!-- ФУТЕР -->
+<footer id="footer">
+    <div class="container">
+        <p style="font-size:1.1rem; font-weight:600; color:#e0b97d; margin-bottom:10px;">LUXBAG</p>
+        <p style="font-size:0.85rem;">Премиальные чемоданы, сумки и рюкзаки</p>
+        <div style="margin: 16px 0;">
+            <a href="#">Instagram</a> |
+            <a href="#">Telegram</a> |
+            <a href="#">WhatsApp</a>
+        </div>
+        <p style="font-size:0.8rem; color:#666;">&copy; 2025. Все права защищены.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // переключатель темы
+    const toggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+        themeIcon.className = 'bi bi-moon';
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        themeIcon.className = isLight ? 'bi bi-moon' : 'bi bi-sun';
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

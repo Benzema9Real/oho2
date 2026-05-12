@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Заказ #{{ order.pk }} — Статус{% endblock %}
+
+{% block content %}
+<section class="container" style="margin-top: 40px; margin-bottom: 80px;">
+
+    <!-- ШАГИ -->
+    <div class="checkout-steps">
+        <div class="step done">
+            <div class="step-num"><i class="bi bi-check-lg"></i></div>
+            <span>Доставка</span>
+        </div>
+        <div class="step-line active-line"></div>
+        <div class="step done">
+            <div class="step-num"><i class="bi bi-check-lg"></i></div>
+            <span>Оплата</span>
+        </div>
+        <div class="step-line active-line"></div>
+        <div class="step active">
+            <div class="step-num">3</div>
+            <span>Статус</span>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <!-- успех -->
+            <div class="status-card text-center">
+                <div class="success-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h3>Заказ оформлен!</h3>
+                <p class="order-num">Заказ <span>#{{ order.pk }}</span></p>
+                <p class="order-date">{{ order.created_at|date:"d.m.Y в H:i" }}</p>
+            </div>
+
+            <!-- статус -->
+            <div class="status-track">
+                <div class="track-step {% if order.status == 'processing' or order.status == 'delivering' or order.status == 'ready' or order.status == 'completed' %}done{% endif %}">
+                    <div class="track-icon"><i class="bi bi-bag-check"></i></div>
+                    <div class="track-info">
+                        <p class="track-title">Принят</p>
+                        <p class="track-desc">Заказ успешно оформлен</p>
+                    </div>
+                </div>
+
+                <div class="track-line {% if order.status == 'delivering' or order.status == 'ready' or order.status == 'completed' %}active{% endif %}"></div>
+
+                <div class="track-step {% if order.status == 'delivering' or order.status == 'ready' or order.status == 'completed' %}done{% elif order.status == 'processing' %}pending{% endif %}">
+                    <div class="track-icon"><i class="bi bi-truck"></i></div>
+                    <div class="track-info">
+                        <p class="track-title">
+                            {% if order.delivery %}Доставляется{% else %}Готовится{% endif %}
+                        </p>
+                        <p class="track-desc">
+                            {% if order.delivery %}Курьер в пути{% else %}Готовим ваш заказ{% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="track-line {% if order.status == 'ready' or order.status == 'completed' %}active{% endif %}"></div>
+
+                <div class="track-step {% if order.status == 'ready' or order.status == 'completed' %}done{% endif %}">
+                    <div class="track-icon"><i class="bi bi-house-check"></i></div>
+                    <div class="track-info">
+                        <p class="track-title">
+                            {% if order.delivery %}Доставлен{% else %}Готов к выдаче{% endif %}
+                        </p>
+                        <p class="track-desc">
+                            {% if order.delivery %}Ожидает вас{% else %}Можете забрать{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- состав заказа -->
+            <div class="order-items-card">
+                <h5 class="order-items-title">Состав заказа</h5>
+                {% for item in order.items.all %}
+                <div class="order-item-row">
+                    <span class="order-item-name">{{ item.product.name }}</span>
+                    <span class="order-item-qty">× {{ item.quantity }}</span>
+                    <span class="order-item-price">{{ item.price_at_purchase }} сом</span>
+                </div>
+                {% endfor %}
+                <div class="order-total-row">
+                    <span>Итого</span>
+                    <span>{{ order.total_price }} сом</span>
+                </div>
+            </div>
+
+            <!-- кнопки -->
+            <div class="d-flex gap-3 justify-content-center mt-4">
+                <a href="{% url 'my_orders' %}" class="btn btn-outline-gold">
+                    Мои заказы
+                </a>
+                <a href="{% url 'catalog' %}" class="btn btn-gold">
+                    Продолжить покупки
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        margin-bottom: 40px;
+    }
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        color: #555;
+        font-size: 0.85rem;
+    }
+    .step.active { color: #e0b97d; }
+    .step.done { color: #2ecc71; }
+    .step-num {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+    .step.active .step-num { border-color: #e0b97d; background: #e0b97d; color: #000; }
+    .step.done .step-num { border-color: #2ecc71; background: #2ecc71; color: #000; }
+    .step-line { width: 80px; height: 2px; background: #2a2a2a; margin-bottom: 22px; }
+    .active-line { background: #2ecc71; }
+
+    /* УСПЕХ */
+    .status-card {
+        background: #1a1a1a;
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 24px;
+        border: 1px solid #2a2a2a;
+    }
+    .success-icon i {
+        font-size: 4rem;
+        color: #2ecc71;
+    }
+    .status-card h3 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 16px 0 8px;
+    }
+    .order-num { color: #888; font-size: 0.9rem; }
+    .order-num span { color: #e0b97d; font-weight: 600; }
+    .order-date { color: #666; font-size: 0.82rem; }
+
+    /* ТРЕКЕР */
+    .status-track {
+        background: #1a1a1a;
+        border-radius: 20px;
+        padding: 28px;
+        margin-bottom: 24px;
+        border: 1px solid #2a2a2a;
+    }
+    .cancelled-block {
+    text-align: center;
+    padding: 20px;
+    color: #e74c3c;
+    font-weight: 600;
+}
+.cancelled-block i { font-size: 2rem; display: block; margin-bottom: 8px; }
+    .track-step {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        opacity: 0.4;
+        transition: opacity 0.3s;
+    }
+    .track-step.done { opacity: 1; }
+    .track-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #2a2a2a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #888;
+        flex-shrink: 0;
+    }
+    .track-step.done .track-icon { background: #2ecc71; color: #000; }
+    .track-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
+    .track-desc { color: #888; font-size: 0.82rem; margin: 0; }
+    .track-line {
+        width: 2px;
+        height: 30px;
+        background: #2a2a2a;
+        margin-left: 21px;
+        margin-top: 4px;
+        margin-bottom: 4px;
+    }
+    .track-line.active { background: #2ecc71; }
+
+    /* СОСТАВ */
+    .order-items-card {
+        background: #1a1a1a;
+        border-radius: 20px;
+        padding: 24px;
+        border: 1px solid #2a2a2a;
+    }
+    .order-items-title {
+        color: #e0b97d;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+    .order-item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #2a2a2a;
+        font-size: 0.9rem;
+        color: #ccc;
+    }
+    .order-item-name { flex-grow: 1; }
+    .order-item-qty { color: #888; margin: 0 16px; }
+    .order-item-price { color: #e0b97d; font-weight: 600; }
+    .order-total-row {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 14px;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #fff;
+    }
+
+    body.light-mode .status-card,
+    body.light-mode .status-track,
+    body.light-mode .order-items-card { background: #fff; border-color: #eee; }
+    body.light-mode .track-icon { background: #f0f0f0; }
+    body.light-mode .order-item-row { border-color: #eee; }
+    body.light-mode .order-total-row { color: #111; }
+</style>
+{% endblock %}

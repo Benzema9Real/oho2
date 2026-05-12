@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Избранное{% endblock %}
+
+{% block content %}
+<section class="container" style="margin-top: 40px; margin-bottom: 80px;">
+
+    <h2 class="section-title">Избранное</h2>
+
+    {% if favs %}
+    <div class="row g-4">
+        {% for fav in favs %}
+        <div class="col-lg-4 col-md-6 d-flex">
+            <div class="product-card d-flex flex-column w-100">
+
+                <!-- фото -->
+                <a href="{% url 'product_detail' fav.product.pk %}">
+                    <div class="card-img-wrapper">
+                        {% with fav.product.images.first as img %}
+                            {% if img %}
+                                <img src="{{ img.image.url }}" alt="{{ fav.product.name }}"
+                                     style="object-fit:contain;">
+                            {% else %}
+                                <img src="{% static 'placeholder.jpg' %}" alt="{{ fav.product.name }}"
+                                     style="object-fit:contain;">
+                            {% endif %}
+                        {% endwith %}
+
+                        {% if fav.product.has_discount %}
+                            <span class="discount-badge">-{{ fav.product.discount_percent }}%</span>
+                        {% elif fav.product.is_new %}
+                            <span class="new-badge">Новинка</span>
+                        {% endif %}
+
+                        <!-- убрать из избранного -->
+                        <button class="favorite-btn active"
+                                data-product="{{ fav.product.pk }}"
+                                onclick="removeFav(this)">
+                            <i class="bi bi-heart-fill"></i>
+                        </button>
+                    </div>
+                </a>
+
+                <!-- инфо -->
+                <div class="card-body d-flex flex-column flex-grow-1">
+                    <h5>{{ fav.product.name }}</h5>
+                    <p class="product-desc">{{ fav.product.description|truncatechars:70 }}</p>
+
+                    <div class="mt-auto">
+                        {% if fav.product.has_discount %}
+                            <div class="mb-2">
+                                <span class="price-old">{{ fav.product.price }} сом</span>
+                                <span class="price-new ms-2">{{ fav.product.discounted_price }} сом</span>
+                            </div>
+                        {% else %}
+                            <div class="mb-2">
+                                <span class="price-regular">{{ fav.product.price }} сом</span>
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'product_detail' fav.product.pk %}"
+                               class="btn btn-outline-gold btn-sm">
+                                Подробнее
+                            </a>
+                            <button class="btn btn-gold btn-sm flex-grow-1 cart-btn"
+                                    data-product="{{ fav.product.pk }}"
+                                    onclick="toggleCart(this)">
+                                <i class="bi bi-bag-plus me-1"></i>В корзину
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-heart"></i>
+        <h4>Список избранного пуст</h4>
+        <p>Добавляйте товары в избранное нажав на сердечко</p>
+        <a href="{% url 'catalog' %}" class="btn btn-gold mt-3">Перейти в каталог</a>
+    </div>
+    {% endif %}
+
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .section-title::after {
+        content: '';
+        display: block;
+        width: 50px;
+        height: 3px;
+        background: #e0b97d;
+        margin: 10px auto 0;
+        border-radius: 2px;
+    }
+    .product-desc {
+        color: #999;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        height: 3.8em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        margin-bottom: 12px;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 100px 20px;
+        color: #888;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        color: #333;
+        display: block;
+        margin-bottom: 20px;
+    }
+    .empty-state h4 { color: #ccc; margin-bottom: 8px; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const CSRF = '{{ csrf_token }}';
+
+    function removeFav(btn) {
+        const productId = btn.dataset.product;
+        fetch(`/ajax/favorite/${productId}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': CSRF},
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.is_fav) {
+                // убираем карточку с анимацией
+                const card = btn.closest('.col-lg-4');
+                card.style.transition = 'opacity 0.3s, transform 0.3s';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => card.remove(), 300);
+            }
+        });
+    }
+
+    function toggleCart(btn) {
+        const productId = btn.dataset.product;
+        fetch(`/ajax/cart/${productId}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': CSRF},
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.in_cart) {
+                btn.className = 'btn btn-danger btn-sm flex-grow-1 cart-btn';
+                btn.innerHTML = '<i class="bi bi-bag-dash me-1"></i>Убрать';
+            } else {
+                btn.className = 'btn btn-gold btn-sm flex-grow-1 cart-btn';
+                btn.innerHTML = '<i class="bi bi-bag-plus me-1"></i>В корзину';
+            }
+            const badge = document.querySelector('.badge-count');
+            if (data.cart_count > 0) {
+                if (badge) badge.textContent = data.cart_count;
+                else {
+                    const cartLink = document.querySelector('.cart-badge');
+                    if (cartLink) {
+                        const span = document.createElement('span');
+                        span.className = 'badge-count';
+                        span.textContent = data.cart_count;
+                        cartLink.appendChild(span);
+                    }
+                }
+            } else if (badge) badge.remove();
+        });
+    }
+</script>
+{% endblock %}

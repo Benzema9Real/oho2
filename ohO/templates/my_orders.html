@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои заказы{% endblock %}
+
+{% block content %}
+<section class="container" style="margin-top: 40px; margin-bottom: 80px;">
+
+    <h2 class="section-title">Мои заказы</h2>
+
+    {% if orders %}
+        {% for order in orders %}
+        <div class="order-card">
+
+            <!-- шапка заказа -->
+            <div class="order-header">
+                <div>
+                    <span class="order-id">Заказ #{{ order.pk }}</span>
+                    <span class="order-date">{{ order.created_at|date:"d.m.Y в H:i" }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    {% if order.delivery %}
+                        <span class="delivery-tag"><i class="bi bi-truck me-1"></i>Доставка</span>
+                    {% else %}
+                        <span class="delivery-tag pickup"><i class="bi bi-shop me-1"></i>Самовывоз</span>
+                    {% endif %}
+                    <span class="status-badge status-{{ order.status }}">
+                        {{ order.get_status_display }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- товары -->
+            <div class="order-items">
+                {% for item in order.items.all %}
+                <div class="order-item-row">
+                    {% with item.product.images.first as img %}
+                    <div class="order-item-img">
+                        {% if img %}
+                            <img src="{{ img.image.url }}" alt="{{ item.product.name }}">
+                        {% else %}
+                            <img src="{% static 'placeholder.jpg' %}" alt="{{ item.product.name }}">
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                    <div class="order-item-info">
+                        <a href="{% url 'product_detail' item.product.pk %}" class="order-item-name">
+                            {{ item.product.name }}
+                        </a>
+                        <span class="order-item-qty">{{ item.quantity }} шт.</span>
+                    </div>
+                    <span class="order-item-price">{{ item.price_at_purchase }} сом</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- футер заказа -->
+<div class="order-footer">
+    {% if order.address %}
+        <span class="order-address">
+            <i class="bi bi-geo-alt me-1"></i>{{ order.address }}
+        </span>
+    {% endif %}
+
+    {% if order.phone %}
+        <span class="order-address">
+            <i class="bi bi-telephone me-1"></i>{{ order.phone }}
+        </span>
+    {% endif %}
+
+    <div class="d-flex align-items-center gap-3">
+        <span class="order-total">
+            Итого: <strong>{{ order.total_price }} сом</strong>
+        </span>
+        {% if order.status == 'processing' %}
+            <a href="{% url 'cancel_order' order.pk %}"
+               class="btn-cancel"
+               onclick="return confirm('Вы уверены что хотите отменить заказ?')">
+                <i class="bi bi-x-circle me-1"></i>Отменить
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+        </div>
+        {% endfor %}
+
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-bag-x"></i>
+            <h4>У вас пока нет заказов</h4>
+            <p>Перейдите в каталог и сделайте первый заказ</p>
+            <a href="{% url 'catalog' %}" class="btn btn-gold mt-3">Перейти в каталог</a>
+        </div>
+    {% endif %}
+
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .btn-cancel {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    text-decoration: none;
+    border: 1px solid #e74c3c44;
+    padding: 4px 12px;
+    border-radius: 20px;
+    transition: 0.3s;
+}
+.btn-cancel:hover {
+    background: #e74c3c;
+    color: #fff;
+}
+.status-cancelled {
+    background: #2a0000;
+    color: #e74c3c;
+    border: 1px solid #e74c3c44;
+}
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .section-title::after {
+        content: '';
+        display: block;
+        width: 50px;
+        height: 3px;
+        background: #e0b97d;
+        margin: 10px auto 0;
+        border-radius: 2px;
+    }
+
+    .order-card {
+        background: #1a1a1a;
+        border-radius: 20px;
+        border: 1px solid #2a2a2a;
+        margin-bottom: 20px;
+        overflow: hidden;
+        transition: box-shadow 0.3s;
+    }
+    .order-card:hover {
+        box-shadow: 0 4px 20px rgba(224,185,125,0.08);
+    }
+
+    /* шапка */
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 24px;
+        border-bottom: 1px solid #2a2a2a;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .order-id {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #e0b97d;
+        margin-right: 12px;
+    }
+    .order-date {
+        color: #666;
+        font-size: 0.82rem;
+    }
+    .delivery-tag {
+        font-size: 0.8rem;
+        color: #888;
+        background: #111;
+        padding: 4px 10px;
+        border-radius: 20px;
+        border: 1px solid #333;
+    }
+    .delivery-tag.pickup { color: #e0b97d; border-color: #e0b97d33; }
+
+    /* статус */
+    .status-badge {
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+    .status-processing { background: #2a2a00; color: #e0b97d; border: 1px solid #e0b97d44; }
+    .status-delivering { background: #001a2a; color: #3498db; border: 1px solid #3498db44; }
+    .status-ready { background: #002a10; color: #2ecc71; border: 1px solid #2ecc7144; }
+    .status-completed { background: #1a1a1a; color: #888; border: 1px solid #333; }
+
+    /* товары */
+    .order-items { padding: 16px 24px; }
+    .order-item-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid #2a2a2a;
+    }
+    .order-item-row:last-child { border-bottom: none; }
+    .order-item-img {
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #111;
+        flex-shrink: 0;
+    }
+    .order-item-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .order-item-info {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    .order-item-name {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #fff;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .order-item-name:hover { color: #e0b97d; }
+    .order-item-qty { color: #888; font-size: 0.8rem; }
+    .order-item-price {
+        color: #e0b97d;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    /* футер */
+    .order-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 24px;
+        background: #111;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .order-address { color: #888; font-size: 0.82rem; }
+    .order-total { color: #ccc; font-size: 0.9rem; }
+    .order-total strong { color: #e0b97d; }
+
+    /* пусто */
+    .empty-state {
+        text-align: center;
+        padding: 100px 20px;
+        color: #888;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        color: #333;
+        display: block;
+        margin-bottom: 20px;
+    }
+    .empty-state h4 { color: #ccc; margin-bottom: 8px; }
+
+    /* светлая тема */
+    body.light-mode .order-card { background: #fff; border-color: #eee; }
+    body.light-mode .order-header { border-color: #eee; }
+    body.light-mode .order-item-row { border-color: #eee; }
+    body.light-mode .order-footer { background: #f5f5f5; }
+    body.light-mode .order-item-name { color: #111; }
+    body.light-mode .delivery-tag { background: #f0f0f0; border-color: #ddd; }
+
+    @media (max-width: 576px) {
+        .order-header { flex-direction: column; align-items: flex-start; }
+        .order-footer { flex-direction: column; align-items: flex-start; }
+    }
+</style>
+{% endblock %}

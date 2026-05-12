@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="auth-card">
+                    <h2 class="auth-title">Регистрация</h2>
+                    <p class="auth-sub">Создайте аккаунт чтобы делать покупки</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="field-error">{{ field.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-gold w-100 mt-2">Зарегистрироваться</button>
+                    </form>
+
+                    <p class="auth-link">
+                        Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-section {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        padding: 60px 0;
+    }
+    .auth-card {
+        background: #1a1a1a;
+        border-radius: 20px;
+        padding: 40px;
+        border: 1px solid #2a2a2a;
+    }
+    .auth-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e0b97d;
+        margin-bottom: 8px;
+    }
+    .auth-sub {
+        color: #888;
+        font-size: 0.9rem;
+        margin-bottom: 28px;
+    }
+    .form-label {
+        color: #ccc;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+    .form-control, input[type="text"], input[type="password"], input[type="email"] {
+        background: #111 !important;
+        border: 1px solid #333 !important;
+        color: #fff !important;
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
+        width: 100%;
+        transition: border-color 0.3s;
+    }
+    .form-control:focus, input:focus {
+        border-color: #e0b97d !important;
+        outline: none !important;
+        box-shadow: 0 0 0 2px rgba(224,185,125,0.15) !important;
+    }
+    .field-error {
+        color: #e74c3c;
+        font-size: 0.8rem;
+        margin-top: 4px;
+    }
+    .auth-link {
+        text-align: center;
+        margin-top: 20px;
+        color: #888;
+        font-size: 0.9rem;
+    }
+    .auth-link a {
+        color: #e0b97d;
+        text-decoration: none;
+    }
+    .auth-link a:hover { text-decoration: underline; }
+
+    /* светлая тема */
+    body.light-mode .auth-card { background: #fff; border-color: #ddd; }
+    body.light-mode .form-label { color: #444; }
+    body.light-mode .form-control,
+    body.light-mode input[type="text"],
+    body.light-mode input[type="password"] {
+        background: #f5f5f5 !important;
+        border-color: #ccc !important;
+        color: #111 !important;
+    }
+</style>
+{% endblock %}
