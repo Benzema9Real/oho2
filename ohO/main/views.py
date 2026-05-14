@@ -75,29 +75,25 @@ def catalog(request):
     categories = Category.objects.all()
     colors = Color.objects.all()
 
-    # избранное для текущего пользователя
     favorite_ids = []
+    cart_ids = []
     if request.user.is_authenticated:
-        favorite_ids = Favorite.objects.filter(user=request.user).values_list('product_id', flat=True)
+        favorite_ids = list(Favorite.objects.filter(user=request.user).values_list('product_id', flat=True))
+        try:
+            cart_ids = list(request.user.cart.items.values_list('product_id', flat=True))
+        except:
+            cart_ids = []
 
-        # корзина для текущего пользователя
-        cart_ids = []
-        if request.user.is_authenticated:
-            try:
-                cart_ids = list(request.user.cart.items.values_list('product_id', flat=True))
-            except:
-                cart_ids = []
-
-        return render(request, 'catalog.html', {
-            'products': products_page,
-            'categories': categories,
-            'colors': colors,
-            'favorite_ids': favorite_ids,
-            'current_category': category_slug,
-            'selected_colors': [int(c) for c in color_ids] if color_ids else [],
-            'sort': sort,
-            'cart_ids': cart_ids,
-        })
+    return render(request, 'catalog.html', {
+        'products': products_page,
+        'categories': categories,
+        'colors': colors,
+        'favorite_ids': favorite_ids,
+        'current_category': category_slug,
+        'selected_colors': [int(c) for c in color_ids] if color_ids else [],
+        'sort': sort,
+        'cart_ids': cart_ids,
+    })
 
 # ───────────────────────────── КАРТОЧКА ТОВАРА ─────────────────────────────
 
