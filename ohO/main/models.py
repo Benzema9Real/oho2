@@ -5,8 +5,7 @@ from decimal import Decimal
 
 class Color(models.Model):
     name = models.CharField(max_length=50)
-    hex = models.CharField(max_length=7, help_text="Формат: #RRGGBB")
-
+    hex = models.CharField(max_length=7, default='#000000', help_text="Формат: #RRGGBB")
     def __str__(self):
         return self.name
 
