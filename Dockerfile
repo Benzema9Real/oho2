@@ -11,4 +11,4 @@ RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python create_superuser.py && gunicorn oho_kg.wsgi --bind 0.0.0.0:$PORT"]
+CMD ["sh", "-c", " python manage.py migrate && python create_superuser.py && gunicorn oho_kg.wsgi --bind 0.0.0.0:$PORT"]
